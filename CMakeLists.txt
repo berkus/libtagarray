@@ -33,6 +33,9 @@ set(SOURCES)
 if(ENABLE_FORTRAN)
   set(SOURCES_Fortran)
 endif()
+if(ENABLE_PYTHON)
+  set(SOURCES_Python)
+endif()
 
 add_subdirectory(source)
 
@@ -130,6 +133,27 @@ if(ENABLE_FORTRAN)
           FILES ${CMAKE_BINARY_DIR}/include/${PN}/tagarray_record.mod
           FILES ${CMAKE_BINARY_DIR}/include/${PN}/tagarray_recordinfo.mod
           DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PN})
+endif()
+
+
+if(ENABLE_PYTHON)
+  add_library(${PN}_py ${SOURCES_Python})
+  target_compile_features(${PN}_py PRIVATE cxx_std_17)
+  target_link_libraries(${PN}_py ${PN})
+  set_target_properties(${PN}_py PROPERTIES VERSION ${PROJECT_VERSION}
+                                            SOVERSION 1)
+  if(IPO_AVAILABLE)
+    set_target_properties(${PN}_py PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+  endif()
+  target_compile_check_add_flags(${PN}_py PRIVATE CXX ${${CMAKE_CXX_COMPILER_ID}_CXX_WARNINGS})
+  install(TARGETS ${PN}_py
+          EXPORT ${PN}Targets
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+          INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+          FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  )
 endif()
 
 
