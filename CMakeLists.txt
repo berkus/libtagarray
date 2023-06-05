@@ -11,6 +11,17 @@ endif()
 set(PN ${PROJECT_NAME})
 
 
+if(${ENABLE_PYTHON} AND NOT ${BUILD_SHARED_LIBS})
+  message(FATAL_ERROR "ENABLE_PYTHON ON requires BUILD_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
+endif()
+
+
+if(ENABLE_PYTHON)
+  find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+  find_package(pybind11 REQUIRED)
+endif()
+
+
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(CheckIPOSupported)
@@ -140,6 +151,7 @@ if(ENABLE_PYTHON)
   add_library(${PN}_py ${SOURCES_Python})
   target_compile_features(${PN}_py PRIVATE cxx_std_17)
   target_link_libraries(${PN}_py ${PN})
+  target_link_libraries(${PN}_py Python3::Module pybind11::headers)
   set_target_properties(${PN}_py PROPERTIES VERSION ${PROJECT_VERSION}
                                             SOVERSION 1)
   if(IPO_AVAILABLE)
